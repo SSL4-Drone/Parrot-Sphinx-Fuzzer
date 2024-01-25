@@ -1,14 +1,14 @@
 import FuzzerDB
 import UlogParser
 import socket
-import time
+import db_data
 
-HOST = ""
+HOST = db_data.HOST
 PORT = 3306
-USER = ""
-PW = ""
-DB = "arsdk_fuzzDB"
-TB = "sphinx_tb"
+USER = db_data.USER
+PW = db_data.PW
+DB = db_data.DB
+TB = db_data.TB
 CHARSET = "utf8"
 
 ULOG_SERVER_ADDR = "192.168.0.35"
