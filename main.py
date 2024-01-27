@@ -27,6 +27,16 @@ ulog_parser = None
 ulogBuf_lock = Lock()
 
 
+def printInfo():
+    print('''
+         _    ___      _                      
+        | |  /   |    | |                     
+ ___ ___| | / /| |  __| |_ __ ___  _ __   ___ 
+/ __/ __| |/ /_| | / _` | '__/ _ \| '_ \ / _ \\
+\__ \__ \ |\___  || (_| | | | (_) | | | |  __/
+|___/___/_|    |_| \__,_|_|  \___/|_| |_|\___|
+''')
+
 def connectDB():
     db = FuzzerDB.FuzzerDB(DB_HOST, DB_PORT, DB_USER, DB_PW, DB, TB, CHARSET)
     print("**[DB Connected]**")
