@@ -1,5 +1,6 @@
 import socket
 from RandPayload import RandPayload
+from PacketParser import PacketParser
 import FuzzerDB
 import db_data
 import UlogParser
@@ -18,6 +19,8 @@ CHARSET = "utf8"
 
 IP = "192.168.42.1"  # Drone IP
 PORT = 2233  # Drone port
+
+iface = "Wi-Fi"
 
 ULOG_SERVER_ADDR = "192.168.0.35"  # Ulog server IP
 ULOG_SERVER_PORT = 33333  # Ulog server port
@@ -76,17 +79,33 @@ def processUlog(payload, ack, received_log_lines, crashed):
                     CRASHED == 1,  # TODO must be modified
                 )
 
+class Sniff(Thread):
+    def __init__(self, iface, seq):
+        threading.Thread.__init__(self)
+        self.iface = iface
+        self.seq = seq
+        self.data = None
+    
+    def run(self):
+        parser = PacketParser(self.iface, self.seq)
+        self.data = parser.parsing()
+    
+    def get_data(self):
+        return self.data
+
 
 def main():
     global fuzzDB, ulog_parser
     fuzzDB = connectDB()
-    # payload = RandPayload()
+    randPayload = RandPayload()
     received_log_lines = [None] * 1
     trash_log_lines = [None] * 1
     ulog_parser = UlogParser.UlogParser()
     ulog_socket = ulog_parser.connect_tcp(ULOG_SERVER_ADDR, ULOG_SERVER_PORT)
     
     # Threads
+    packetThread = Sniff(iface, seq)
+    
     UlogConsumingThread = Thread(
         target=ulog_parser.listen,
         args=(0, trash_log_lines),
@@ -105,8 +124,12 @@ def main():
         # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         while True:
             for seq in range(255):
-                # data = payload.generate_random_payload(seq)
-                # sock.sendto(data, (IP, PORT))
+                payload = randPayload.generate_random_payload(seq)
+                sock.sendto(payload, (IP, PORT))
+
+                # Parsing ACK packet payload
+                packetThread.start()
+                ack_data = packetThread.get_data()
 
                 # Ulog, ack payload DB에 저장
 
@@ -117,12 +140,15 @@ def main():
                     name="UlogReadingThread",
                 )
                 UlogReadingThread.start()
+                
                 UlogReadingThread.join()
+                packetThread.join()
+                data = packetThread.get_data()
 
                 print("recved :", received_log_lines)
                 # db에는 processUlog 인자로 received_log_lines[0] 저장
                 log_lines = received_log_lines[0].decode("utf-8")
-                processUlog(b"AAA", b"BBBB", log_lines, 0)
+                processUlog(payload, ack_data, log_lines, 0)
 
     except Exception as ex:
         print("**[Error]** ", ex)
