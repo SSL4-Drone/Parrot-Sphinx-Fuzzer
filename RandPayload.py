@@ -50,6 +50,19 @@ class RandPayload:
 
         return data_frame
 
+    def generate_real_random(self, seq):
+        data_type = random.choice(self.DATA_TYPE)
+        target_buffer_id = random.choice(self.TARGET_BUF_ID)
+        data_size = random.choice(self.RANDOM_SIZE)
+        actual_data = bytes([random.randint(0, 255) for _ in range(data_size)])
+        
+        # Construct the data frame
+        data_frame = struct.pack(
+            "<BBBI", data_type, target_buffer_id, seq, len(actual_data) + self.HEADER_SIZE
+        )
+        data_frame += actual_data
+
+        return data_frame
 
 
 # for seq in range(10):
