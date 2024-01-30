@@ -9,6 +9,7 @@ class RandPayload:
         self.MAX_CLS_SIZE = 0xff
         self.MAX_CMD_SIZE = 0x10  # MAX actual data size (total size - size of header)
         self.HEADER_SIZE = 0x7  # size of header
+        self.RANDOM_SIZE = [i for i in range(8, 40)]
 
         self.PRJ_ID = [0X0, 0X1, 0X2, 0X3, 0X4, 0X8]     # 1 byte
         self.FEAT_ID = [i for i in range(133, 177)]      # 1 byte
